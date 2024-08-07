@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"strconv"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -44,9 +45,9 @@ func main() {
 
 	// delete
 	app.Delete("/api/todos/:id", func(c *fiber.Ctx) error {
-		id := c.Params("id")
+		id, _ := c.ParamsInt("id")
 		for i, todo := range todos {
-			if fmt.Sprint(todo.ID) == id {
+			if todo.ID == id {
 				todos = append(todos[:i], todos[i+1:]...)
 				return c.Status(200).JSON(fiber.Map{"success": true})
 			}
@@ -55,8 +56,9 @@ func main() {
 	})
 
 	// update
-	app.Put("/api/todos/", func(c *fiber.Ctx) error {
-		todo := &Todo{}
+	app.Put("/api/todos/:id", func(c *fiber.Ctx) error {
+		id, _ := strconv.Atoi(c.Params("id"))
+		todo := &Todo{ID: id}
 		if err := c.BodyParser(todo); err != nil {
 			return c.Status(404).JSON(fiber.Map{"error": "Todo not found"})
 		}
